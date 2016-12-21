@@ -1,6 +1,6 @@
 # botpress-dialog
 
-Official Dialog module for [Botpress](http://github.com/botpress/botpress).
+Official Dialog module for [Botpress](http://github.com/botpress/botpress). Uses [dialog-node](https://github.com/dialoganalytics/dialog-node) behind the scenes.
 
 [![Dependency Status](https://gemnasium.com/badges/github.com/dialoganalytics/botpress-dialog.svg)](https://gemnasium.com/github.com/dialoganalytics/botpress-dialog)
 [![NPM Version](http://img.shields.io/npm/v/botpress-dialog.svg)](https://www.npmjs.org/package/botpress-dialog)

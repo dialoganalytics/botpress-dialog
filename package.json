@@ -1,10 +1,10 @@
 {
   "name": "botpress-dialog",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Track messages with Dialog Analytics.",
   "main": "bin/node.bundle.js",
   "botpress": {
-    "menuText": "botpress-dialog",
+    "menuText": "Dialog",
     "menuIcon": "view_module",
     "webBundle": "bin/web.bundle.js"
   },

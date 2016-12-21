@@ -41,7 +41,7 @@
     "webpack": "^1.13.3"
   },
   "dependencies": {
-    "dialog-api": "file:///Users/pdionne/Dev/dialog/dialog-node",
+    "dialog-api": "0.0.5",
     "lodash.clonedeep": "^4.5.0",
     "lodash.merge": "^4.6.0"
   }

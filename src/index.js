@@ -93,7 +93,7 @@ const incomingMessage = (event) => {
       profile_picture: event.user.profile_pic,
       gender: event.user.gender,
       timezone: event.user.timezone,
-      locale: event.user.locale,
+      locale: dialog.locale.messenger(event.user.locale),
     }
   }
 }

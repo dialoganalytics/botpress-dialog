@@ -35,15 +35,17 @@ const callback = (logger) => {
 }
 
 const incomingMiddleware = (event, next) => {
-  let payload = null
-
-  if (event.type == 'message') {
-    payload = textMessage(incomingMessage(event), event)
-  } else if (event.type == 'attachments') {
-    payload = attachmentMessage(incomingMessage(event), event)
+  let mapping = {
+    message: textMessage,
+    quick_reply: quickReplyMessage,
+    attachments: incomingAttachmentMessage
   }
 
-  if (payload) {
+  let payloadFunc = mapping[event.type]
+
+  if (payloadFunc) {
+    let payload = payloadFunc(incomingMessage(event), event)
+
     dialog.track(payload, callback(event.bp.logger))
     event.bp.logger.verbose('[botpress-dialog] Tracking incoming message')
   }
@@ -52,15 +54,17 @@ const incomingMiddleware = (event, next) => {
 }
 
 const outgoingMiddleware = (event, next) => {
-  let payload = null
-
-  if (event.type == 'text') {
-    payload = textMessage(outgoingMessage(event), event)
-  } else if (event.type == 'attachments') {
-    payload = attachmentMessage(outgoingMessage(event), event)
+  let mapping = {
+    text: textMessage,
+    template: templateMessage,
+    attachment: outgoingAttachmentMessage
   }
 
-  if (payload) {
+  let payloadFunc = mapping[event.type]
+
+  if (payloadFunc) {
+    let payload = payloadFunc(outgoingMessage(event), event)
+
     dialog.track(payload, callback(event.bp.logger))
     event.bp.logger.verbose('[botpress-dialog] Tracking outgoing message')
   }
@@ -119,21 +123,64 @@ const textMessage = (payload, event) => {
     message: {
       mtype: 'text',
       properties: {
-        text: event.text
+        text: event.text,
+        quick_replies: event.raw.quick_replies
       }
     }
   })
 }
 
-const attachmentMessage = (payload, event) => {
+const quickReplyMessage = (payload, event) => {
+  return merge(payload, {
+    message: {
+      mtype: 'quick_reply',
+      properties: {
+        text: event.raw.message.text
+      }
+    }
+  })
+}
+
+const outgoingAttachmentMessage = (payload, event) => {
+  return merge(payload, {
+    message: {
+      mtype: event.raw.type,
+      properties: {
+        url: event.raw.url,
+        quick_replies: event.raw.quick_replies
+      }
+    }
+  })
+}
+
+// @note Only the first attachment is considered
+const incomingAttachmentMessage = (payload, event) => {
   let attachment = event.raw.message.attachments[0]
 
   return merge(payload, {
     message: {
       mtype: attachment.type,
       properties: {
-        url: attachment.url
+        url: attachment.payload.url
       }
+    }
+  })
+}
+
+const templateMessage = (payload, event) => {
+  return merge(payload, {
+    message: {
+      mtype: 'template',
+      properties: event.raw.payload
+    }
+  })
+}
+
+const buttonMessage = (payload, event) => {
+  return merge(payload, {
+    message: {
+      mtype: 'button',
+      properties: event.raw.payload
     }
   })
 }

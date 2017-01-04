@@ -190,7 +190,7 @@ const platformsMapping = {
 }
 
 module.exports = {
-  init: function(bp) {
+  init: (bp) => {
     configFile = path.join(bp.projectLocation, bp.botfile.modulesConfigDir, 'botpress-dialog.json')
 
     bp.middlewares.register({

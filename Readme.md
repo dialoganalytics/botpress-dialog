@@ -23,6 +23,8 @@ Configure the module with your Dialog API token which is available in your [pers
 
 Configuration can also be done programmatically by providing the settings in the file `${modules_config_dir}/botpress-dialog.json`.
 
+**Note:** Please note this currently only works with [botpress-messenger](https://github.com/botpress/botpress-messenger)
+
 ## Usage
 
 Once the module is installed and configured, every incoming and outgoing messages will be tracked by Dialog.

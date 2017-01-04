@@ -94,6 +94,7 @@ export default class TemplateModule extends React.Component {
   renderFields() {
     return (
       <div className="form-horizontal">
+        <Alert bsStyle="info">Please note this currently works only with botpress-messenger</Alert>
         <FormGroup>
           <Col componentClass={ControlLabel} sm={3}>
             API Token

@@ -43,7 +43,7 @@ const incomingMiddleware = (event, next) => {
 
   let payloadFunc = mapping[event.type]
 
-  if (payloadFunc) {
+  if (event.platform == 'facebook' && payloadFunc) {
     let payload = payloadFunc(incomingMessage(event), event)
 
     dialog.track(payload, callback(event.bp.logger))
@@ -62,7 +62,7 @@ const outgoingMiddleware = (event, next) => {
 
   let payloadFunc = mapping[event.type]
 
-  if (payloadFunc) {
+  if (event.platform == 'facebook' && payloadFunc) {
     let payload = payloadFunc(outgoingMessage(event), event)
 
     dialog.track(payload, callback(event.bp.logger))

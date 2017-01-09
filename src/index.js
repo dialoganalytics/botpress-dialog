@@ -3,6 +3,7 @@ import path from 'path'
 import fs from 'fs'
 
 import merge from 'lodash.merge'
+import uuid from 'uuid'
 import Dialog from 'dialog-api'
 
 let dialog = null
@@ -38,7 +39,8 @@ const incomingMiddleware = (event, next) => {
   let mapping = {
     message: textMessage,
     quick_reply: quickReplyMessage,
-    attachments: incomingAttachmentMessage
+    attachments: incomingAttachmentMessage,
+    postback: postbackMessage
   }
 
   let payloadFunc = mapping[event.type]
@@ -75,7 +77,6 @@ const outgoingMiddleware = (event, next) => {
 const incomingMessage = (event) => {
   return {
     message: {
-      distinct_id: event.raw.message.mid,
       platform: platformsMapping[event.platform],
       provider: "botpress-dialog",
       mtype: null,
@@ -121,6 +122,7 @@ const outgoingMessage = (event) => {
 const textMessage = (payload, event) => {
   return merge(payload, {
     message: {
+      distinct_id: event.raw.message.mid,
       mtype: 'text',
       properties: {
         text: event.text,
@@ -130,9 +132,24 @@ const textMessage = (payload, event) => {
   })
 }
 
+// Uses the postback payload. Ideally Messenger API would return both
+// the payload and text of the button, so we can use the text with Dialog.
+const postbackMessage = (payload, event) => {
+  return merge(payload, {
+    message: {
+      distinct_id: uuid.v4(),
+      mtype: 'postback',
+      properties: {
+        text: event.raw.postback.payload
+      }
+    }
+  })
+}
+
 const quickReplyMessage = (payload, event) => {
   return merge(payload, {
     message: {
+      distinct_id: event.raw.message.mid,
       mtype: 'quick_reply',
       properties: {
         text: event.raw.message.text
@@ -159,6 +176,7 @@ const incomingAttachmentMessage = (payload, event) => {
 
   return merge(payload, {
     message: {
+      distinct_id: event.raw.message.mid,
       mtype: attachment.type,
       properties: {
         url: attachment.payload.url

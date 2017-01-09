@@ -1,6 +1,6 @@
 {
   "name": "botpress-dialog",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Track messages with Dialog Analytics.",
   "main": "bin/node.bundle.js",
   "botpress": {
@@ -45,6 +45,7 @@
   "dependencies": {
     "dialog-api": "0.0.7",
     "lodash.clonedeep": "^4.5.0",
-    "lodash.merge": "^4.6.0"
+    "lodash.merge": "^4.6.0",
+    "uuid": "^3.0.1"
   }
 }

@@ -138,8 +138,9 @@ const postbackMessage = (payload, event) => {
   return merge(payload, {
     message: {
       distinct_id: uuid.v4(),
-      mtype: 'postback',
+      mtype: 'event',
       properties: {
+        type: 'postback',
         text: event.raw.postback.payload
       }
     }

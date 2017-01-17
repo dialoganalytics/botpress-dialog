@@ -2,6 +2,7 @@ import util from 'util'
 import path from 'path'
 import fs from 'fs'
 
+import includes from 'lodash.includes'
 import merge from 'lodash.merge'
 import uuid from 'uuid'
 import Dialog from 'dialog-api'
@@ -36,17 +37,10 @@ const callback = (logger) => {
 }
 
 const incomingMiddleware = (event, next) => {
-  let mapping = {
-    message: textMessage,
-    quick_reply: quickReplyMessage,
-    attachments: incomingAttachmentMessage,
-    postback: postbackMessage
-  }
+  let types = ['attachments', 'message', 'postback', 'quick_reply']
 
-  let payloadFunc = mapping[event.type]
-
-  if (event.platform == 'facebook' && payloadFunc) {
-    let payload = payloadFunc(incomingMessage(event), event)
+  if (event.platform == 'facebook' && includes(types, event.type) ) {
+    let payload = incomingMessage(event)
 
     dialog.track(payload, callback(event.bp.logger))
     event.bp.logger.verbose('[botpress-dialog] Tracking incoming message')
@@ -56,16 +50,10 @@ const incomingMiddleware = (event, next) => {
 }
 
 const outgoingMiddleware = (event, next) => {
-  let mapping = {
-    text: textMessage,
-    template: templateMessage,
-    attachment: outgoingAttachmentMessage
-  }
+  let types = ['attachment', 'template', 'text']
 
-  let payloadFunc = mapping[event.type]
-
-  if (event.platform == 'facebook' && payloadFunc) {
-    let payload = payloadFunc(outgoingMessage(event), event)
+  if (event.platform == 'facebook' && includes(types, event.type)) {
+    let payload = outgoingMessage(event)
 
     dialog.track(payload, callback(event.bp.logger))
     event.bp.logger.verbose('[botpress-dialog] Tracking outgoing message')
@@ -74,8 +62,21 @@ const outgoingMiddleware = (event, next) => {
   next()
 }
 
+// [x] Attachments
+// [x] Postbacks
+// [x] Quick replies
+// [x] Text messages
 const incomingMessage = (event) => {
-  return {
+  let mapping = {
+    attachments: dialog.messenger.webhook.attachment,
+    postback: dialog.messenger.webhook.postback,
+    message: dialog.messenger.webhook.message,
+    quick_reply: dialog.messenger.webhook.quick_reply
+  }
+
+  let payloadFunc = mapping[event.type]
+
+  let payload = {
     message: {
       platform: platformsMapping[event.platform],
       provider: "botpress-dialog",
@@ -94,13 +95,26 @@ const incomingMessage = (event) => {
       profile_picture: event.user.profile_pic,
       gender: event.user.gender,
       timezone: event.user.timezone,
-      locale: dialog.locale.messenger(event.user.locale),
+      locale: dialog.messenger.locale(event.user.locale),
     }
   }
+
+  return merge(payload, payloadFunc(event.raw))
 }
 
+// [x] Attachments
+// [x] Templates
+// [x] Text messages
 const outgoingMessage = (event) => {
-  return {
+  let mapping = {
+    attachment: dialog.messenger.send.attachment,
+    template: dialog.messenger.send.template,
+    text: dialog.messenger.send.text
+  }
+
+  let payloadFunc = mapping[event.type]
+
+  let payload = {
     message: {
       distinct_id: event.__id,
       platform: "messenger",
@@ -117,91 +131,8 @@ const outgoingMessage = (event) => {
       type: "bot"
     }
   }
-}
 
-const textMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      distinct_id: event.raw.message.mid,
-      mtype: 'text',
-      properties: {
-        text: event.text,
-        quick_replies: event.raw.quick_replies
-      }
-    }
-  })
-}
-
-// Uses the postback payload. Ideally Messenger API would return both
-// the payload and text of the button, so we can use the text with Dialog.
-const postbackMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      distinct_id: uuid.v4(),
-      mtype: 'event',
-      properties: {
-        type: 'postback',
-        text: event.raw.postback.payload
-      }
-    }
-  })
-}
-
-const quickReplyMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      distinct_id: event.raw.message.mid,
-      mtype: 'quick_reply',
-      properties: {
-        text: event.raw.message.text
-      }
-    }
-  })
-}
-
-const outgoingAttachmentMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      mtype: event.raw.type,
-      properties: {
-        url: event.raw.url,
-        quick_replies: event.raw.quick_replies
-      }
-    }
-  })
-}
-
-// @note Only the first attachment is considered
-const incomingAttachmentMessage = (payload, event) => {
-  let attachment = event.raw.message.attachments[0]
-
-  return merge(payload, {
-    message: {
-      distinct_id: event.raw.message.mid,
-      mtype: attachment.type,
-      properties: {
-        url: attachment.payload.url
-      }
-    }
-  })
-}
-
-const templateMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      mtype: 'template',
-      properties: event.raw.payload
-    }
-  })
-}
-
-const buttonMessage = (payload, event) => {
-  return merge(payload, {
-    message: {
-      mtype: 'button',
-      properties: event.raw.payload
-    }
-  })
+  return merge(payload, payloadFunc(event.raw))
 }
 
 const platformsMapping = {

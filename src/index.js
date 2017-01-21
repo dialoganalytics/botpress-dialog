@@ -5,7 +5,7 @@ import fs from 'fs'
 import includes from 'lodash.includes'
 import merge from 'lodash.merge'
 import uuid from 'uuid'
-import Dialog from 'dialog-api'
+import Dialog from 'dialog-api/lib/messenger'
 
 let dialog = null
 let configFile = null
@@ -37,106 +37,67 @@ const callback = (logger) => {
 }
 
 const incomingMiddleware = (event, next) => {
-  let types = ['attachments', 'message', 'postback', 'quick_reply']
+  if (event.platform == 'facebook') {
+    let payload = {
+      entry: [
+        {
+          messaging: [event.raw]
+        }
+      ]
+    }
 
-  if (event.platform == 'facebook' && includes(types, event.type) ) {
-    let payload = incomingMessage(event)
-
-    dialog.track(payload, callback(event.bp.logger))
-    event.bp.logger.verbose('[botpress-dialog] Tracking incoming message')
+    dialog.incoming(payload, callback(event.bp.logger))
+    event.bp.logger.verbose('[botpress-dialog] Incoming message')
   }
 
   next()
 }
 
 const outgoingMiddleware = (event, next) => {
-  let types = ['attachment', 'template', 'text']
+  if (event.platform == 'facebook') {
+    // Rebuild response object expected by dialog-api
+    let response = {
+      message_id: event.__id, // Not the real Facebook message ID, but whatever
+      recipient_id: event.raw.to
+    }
 
-  if (event.platform == 'facebook' && includes(types, event.type)) {
-    let payload = outgoingMessage(event)
+    // Rebuild payload object expected by dialog-api
+    let payload
+    if (event.type == 'text') {
+      payload = {
+        message: {
+          text: event.raw.message
+        }
+      }
+    } else if (event.type == 'template') {
+      payload = {
+        message: {
+          attachment: {
+            type: 'template',
+            payload: event.raw.payload
+          }
+        }
+      }
+    } else if (event.type == 'attachment') {
+      payload = {
+        message: {
+          attachment: {
+            type: event.raw.type,
+            payload: event.raw
+          }
+        }
+      }
+    } else {
+      // noop
+    }
 
-    dialog.track(payload, callback(event.bp.logger))
-    event.bp.logger.verbose('[botpress-dialog] Tracking outgoing message')
+    if (payload) {
+      dialog.outgoing(payload, response, callback(event.bp.logger))
+      event.bp.logger.verbose('[botpress-dialog] Outgoing message')
+    }
   }
 
   next()
-}
-
-// [x] Attachments
-// [x] Postbacks
-// [x] Quick replies
-// [x] Text messages
-const incomingMessage = (event) => {
-  let mapping = {
-    attachments: dialog.messenger.webhook.attachment,
-    postback: dialog.messenger.webhook.postback,
-    message: dialog.messenger.webhook.message,
-    quick_reply: dialog.messenger.webhook.quick_reply
-  }
-
-  let payloadFunc = mapping[event.type]
-
-  let payload = {
-    message: {
-      platform: platformsMapping[event.platform],
-      provider: "botpress-dialog",
-      mtype: null,
-      sent_at: event.raw.timestamp / 1000,
-      properties: {}
-    },
-    conversation: {
-      distinct_id: event.raw.sender.id + '-' + dialog.botId
-    },
-    creator: {
-      distinct_id: event.user.id,
-      type: "interlocutor",
-      first_name: event.user.first_name,
-      last_name: event.user.last_name,
-      profile_picture: event.user.profile_pic,
-      gender: event.user.gender,
-      timezone: event.user.timezone,
-      locale: dialog.messenger.locale(event.user.locale),
-    }
-  }
-
-  return merge(payload, payloadFunc(event.raw))
-}
-
-// [x] Attachments
-// [x] Templates
-// [x] Text messages
-const outgoingMessage = (event) => {
-  let mapping = {
-    attachment: dialog.messenger.send.attachment,
-    template: dialog.messenger.send.template,
-    text: dialog.messenger.send.text
-  }
-
-  let payloadFunc = mapping[event.type]
-
-  let payload = {
-    message: {
-      distinct_id: event.__id,
-      platform: "messenger",
-      provider: "botpress-dialog",
-      mtype: null,
-      sent_at: new Date().getTime() / 1000,
-      properties: {}
-    },
-    conversation: {
-      distinct_id: event.raw.to + '-' + dialog.botId
-    },
-    creator: {
-      distinct_id: dialog.botId,
-      type: "bot"
-    }
-  }
-
-  return merge(payload, payloadFunc(event.raw))
-}
-
-const platformsMapping = {
-  facebook: 'messenger'
 }
 
 module.exports = {

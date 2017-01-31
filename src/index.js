@@ -66,7 +66,8 @@ const outgoingMiddleware = (event, next) => {
     if (event.type == 'text') {
       payload = {
         message: {
-          text: event.raw.message
+          text: event.raw.message,
+          quick_replies: event.raw.quick_replies
         }
       }
     } else if (event.type == 'template') {

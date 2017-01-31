@@ -109,7 +109,7 @@ module.exports = {
       module: 'botpress-dialog',
       type: 'outgoing',
       handler: outgoingMiddleware,
-      order: 5,
+      order: 0,
       description: 'Tracks outgoing messages with Dialog Analytics'
     })
 
@@ -118,7 +118,7 @@ module.exports = {
       module: 'botpress-dialog',
       type: 'incoming',
       handler: incomingMiddleware,
-      order: 5,
+      order: 0,
       description: 'Tracks incoming messages with Dialog Analytics'
     })
 

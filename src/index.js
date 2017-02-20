@@ -8,23 +8,6 @@ import uuid from 'uuid'
 import Dialog from 'dialog-api/lib/messenger'
 
 let dialog = null
-let configFile = null
-
-const saveConfig = (config) => {
-  fs.writeFileSync(configFile, JSON.stringify(config))
-}
-
-const loadConfig = () => {
-  if (!fs.existsSync(configFile)) {
-    const config = { accessToken : '', botId: '' }
-    saveConfig(config, configFile)
-  }
-
-  const overrides = {}
-  if (process.env.DIALOG_TOKEN) overrides.accessToken = process.env.DIALOG_TOKEN
-
-  return Object.assign(JSON.parse(fs.readFileSync(configFile, 'utf-8')), overrides)
-}
 
 const callback = (logger) => {
   return (error, response, body) => {
@@ -102,8 +85,13 @@ const outgoingMiddleware = (event, next) => {
 }
 
 module.exports = {
-  init: (bp) => {
-    configFile = path.join(bp.projectLocation, bp.botfile.modulesConfigDir, 'botpress-dialog.json')
+
+  config: {
+    accessToken : { type: 'string', env: 'DIALOG_TOKEN' },
+    botId: { type: 'string' }
+  },
+
+  init: async (bp, configurator) => {
 
     bp.middlewares.register({
       name: 'dialog.outgoing',
@@ -123,22 +111,22 @@ module.exports = {
       description: 'Tracks incoming messages with Dialog Analytics'
     })
 
-    let config = loadConfig()
+    const { accessToken, botId } = await configurator.loadAll()
 
-    dialog = new Dialog(config.accessToken, config.botId)
+    dialog = new Dialog(accessToken, botId)
   },
 
-  ready: function(bp) {
+  ready: (bp, configurator) => {
     const router = bp.getRouter('botpress-dialog')
 
-    router.get('/config', (req, res) => {
-      res.send(loadConfig())
+    router.get('/config', async (req, res) => {
+      res.send(await configurator.loadAll())
     })
 
-    router.post('/config', (req, res) => {
+    router.post('/config', async (req, res) => {
       const { accessToken, botId } = req.body
 
-      saveConfig({ accessToken, botId })
+      configurator.saveAll({ accessToken, botId })
 
       dialog.apiToken = accessToken
       dialog.botId = botId

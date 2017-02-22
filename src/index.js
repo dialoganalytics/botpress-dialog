@@ -81,21 +81,34 @@ const outgoingMiddleware = (event, next) => {
   next()
 }
 
-module.exports = {
+const outgoingAttachMiddleware = (event, next) => {
+  event.dialog.context = dialog.context || {}
 
+  next()
+}
+
+module.exports = {
   config: {
     accessToken : { type: 'string', env: 'DIALOG_TOKEN' },
     botId: { type: 'string' }
   },
 
   init: async (bp, configurator) => {
+    bp.middlewares.register({
+      name: 'dialog.outgoing.attach',
+      module: 'botpress-dialog',
+      type: 'outgoing',
+      handler: outgoingAttachMiddleware,
+      order: 0,
+      description: 'Modifies the outgoing payload of Dialog Analytics'
+    })
 
     bp.middlewares.register({
       name: 'dialog.outgoing',
       module: 'botpress-dialog',
       type: 'outgoing',
       handler: outgoingMiddleware,
-      order: 0,
+      order: 99, // Must be the last middleware to be called in order for dialog.attach() to work async
       description: 'Tracks outgoing messages with Dialog Analytics'
     })
 

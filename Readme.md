@@ -52,7 +52,7 @@ bp.dialog.link('http://example.com', interlocutorDistinctId)
 
 #### Attach
 
-Use the helper method `bp.dialog.attach` to modify the current `track` payload about to be sent to Dialog's API.
+Modify the current `track` payload about to be sent to Dialog's API with this helper method.
 
 For example, you can specify a message name:
 

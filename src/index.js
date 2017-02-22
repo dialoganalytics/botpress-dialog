@@ -2,9 +2,6 @@ import util from 'util'
 import path from 'path'
 import fs from 'fs'
 
-import includes from 'lodash.includes'
-import merge from 'lodash.merge'
-import uuid from 'uuid'
 import Dialog from 'dialog-api/lib/messenger'
 
 let dialog = null

@@ -48,10 +48,6 @@
     "webpack-node-externals": "^1.5.4"
   },
   "dependencies": {
-    "dialog-api": "^0.0.x",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.includes": "^4.3.0",
-    "lodash.merge": "^4.6.0",
-    "uuid": "^3.0.1"
+    "dialog-api": "^0.0.x"
   }
 }

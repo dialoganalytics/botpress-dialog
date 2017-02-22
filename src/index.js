@@ -111,6 +111,14 @@ module.exports = {
     const { accessToken, botId } = await configurator.loadAll()
 
     dialog = new Dialog(accessToken, botId)
+
+    // Expose dialog methods
+    bp.dialog = {
+      attach: dialog.attach,
+      track: dialog.track,
+      event: dialog.event,
+      link: dialog.link
+    }
   },
 
   ready: (bp, configurator) => {

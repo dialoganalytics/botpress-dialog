@@ -28,3 +28,48 @@ Configuration can also be done programmatically by providing the settings in the
 ## Usage
 
 Once the module is installed and configured, every incoming and outgoing messages will be tracked by Dialog.
+
+### Advanced
+
+Advanced instrumentation is exposed via the `bp.dialog` object. The following methods are available:
+
+#### Events
+
+Send events to Dialog to keep track of your custom logic. Optionally pass an Interlocutor's distinct id to tie the event to one of your bot's interlocutors. See [docs.dialoganalytics.com/reference/event#create](https://docs.dialoganalytics.com/reference/event#create)
+
+```js
+bp.dialog.event('subscribed', 'interlocutorDistinctId', { custom: 'value' })
+```
+
+#### Clicks
+
+Record clicks by interlocutors inside a conversation using a trackable link. For every links that needs to be tracked, generate a trackable URL by passing the interlocutor's distinct Id (provided by the platform or provider) and the `url` to the `link` method. See [docs.dialoganalytics.com/reference/click-tracking](https://docs.dialoganalytics.com/reference/click-tracking/)
+
+```js
+bp.dialog.link('http://example.com', interlocutorDistinctId)
+// https://api.dialoganalytics.com/v1/b/7928374/clicks/?id=123456&url=http%3A%2F%2Fexample.com
+```
+
+#### Attach
+
+Use the helper method `bp.dialog.attach` to modify the current `track` payload about to be sent to Dialog's API.
+
+For example, you can specify a message name:
+
+```js
+bp.dialog.attach('welcome')
+bp.dialog.attach({ message: { name: 'welcome' }}) // equivalent
+```
+
+This will modify the `track` payload:
+
+```js
+{
+  message: {
+    name: "welcome",
+    ...
+  },
+  conversation: { ... },
+  creator: { ... }
+}
+```

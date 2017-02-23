@@ -17,7 +17,15 @@
     "type": "git",
     "url": "git+https://github.com/dialoganalytics/botpress-dialog.git"
   },
-  "author": "p@dialoganalytics.com",
+  "keywords": [
+    "analytics",
+    "api",
+    "dialog",
+    "chatbot",
+    "conversation",
+    "botpress"
+  ],
+  "author": "Philippe Dionne <p@dialoganalytics.com>",
   "license": "AGPL-3.0",
   "devDependencies": {
     "babel-core": "^6.18.2",

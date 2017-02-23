@@ -1,6 +1,6 @@
 {
   "name": "botpress-dialog",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Track messages with Dialog Analytics.",
   "main": "bin/node.bundle.js",
   "botpress": {
@@ -9,7 +9,7 @@
     "webBundle": "bin/web.bundle.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --reporter spec",
     "watch": "node webpack.js --watch",
     "compile": "node webpack.js --compile"
   },
@@ -48,5 +48,9 @@
   },
   "dependencies": {
     "dialog-api": "^0.0.x"
+  },
+  "devDependencies": {
+    "chai": ">= 3.5.0",
+    "mocha": ">= 2.4.5"
   }
 }

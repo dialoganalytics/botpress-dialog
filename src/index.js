@@ -110,7 +110,7 @@ module.exports = {
     botId: { type: 'string' }
   },
 
-  init: async (bp, configurator) => {
+  init: (bp, configurator) => {
     configFile = path.join(bp.projectLocation, bp.botfile.modulesConfigDir, 'botpress-dialog.json')
 
     bp.middlewares.register({

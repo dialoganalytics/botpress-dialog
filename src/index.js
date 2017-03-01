@@ -1,3 +1,5 @@
+import checkVersion from 'botpress-version-manager'
+
 import util from 'util'
 import path from 'path'
 import fs from 'fs'
@@ -111,6 +113,8 @@ module.exports = {
   },
 
   init: (bp, configurator) => {
+    checkVersion(bp, __dirname)
+
     configFile = path.join(bp.projectLocation, bp.botfile.modulesConfigDir, 'botpress-dialog.json')
 
     bp.middlewares.register({
